@@ -3,18 +3,21 @@ import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import ArrowComponent from "@/components/ArrowComponent";
 import PageHeader from "@/components/PageHeader";
+import { useAuth } from "@/context/AuthContext";
 
 const History = () => {
-
+    const { user } = useAuth();
     const [rows, setRows] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     
     useEffect(() => {
         const fetchHistory = async () => {
-            const { data } = await supabase
+            setLoading(true);
+            setError("");
+
+            let query = supabase
                 .from("purchases")
-                // .select("*");
                 .select(`
                     id,
                     purchased_at,
@@ -25,25 +28,25 @@ const History = () => {
                         shop_name
                     )
                 `)
-                //     location:locations (
-                //     id,
-                //     shop name,
-                //     address
-                //     ),
-                //     photos:purchase_photos (
-                //     id,
-                //     storage_path,
-                //     caption,
-                //     created_at
-                //     )
-                // `)
-                // .eq("user_id", user_id)
-                // .order("purchased_at", { ascending: false });
-                setRows(data ?? []);
+                .order("purchased_at", { ascending: false });
+
+                if (user) query = query.eq("user_id", user.id);
+                const { data, error } = await query;
+
+                if (error) {
+                    setError(error.message);
+                    setRows([]);
+                } else {
+                    setRows(data ?? []);
+                }
+
+                setLoading(false);
         };
 
-        fetchHistory();
-    }, []);
+        if (user) fetchHistory();
+    }, [user]);
+
+    if (error) return <div className="text-red-500">{error}</div>;
 
     return (
         <div className="flex flex-col">

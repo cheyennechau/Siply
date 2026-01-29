@@ -4,9 +4,74 @@ import StarRating from "@/components/StarRating";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 
 const Add = () => {
+    const [shopName, setShopName] = useState("");
+    const [drinkName, setDrinkName] = useState("");
+    const [price, setPrice] = useState("");
+    const [date, setDate] = useState(""); // keep as text for now (MVP)
+    const [rating, setRating] = useState(0);
+    const [notes, setNotes] = useState("");
+    const [saving, setSaving] = useState(false);
+
+    const handleSubmit = async () => {
+        try {
+        setSaving(true);
+
+        if (!shopName.trim()) return alert("Please enter a location.");
+        if (!drinkName.trim()) return alert("Please enter a drink name.");
+
+        // 1) Find existing location for this user (RLS enforces ownership)
+        const { data: existingLocs, error: locSelectErr } = await supabase
+            .from("locations")
+            .select("id")
+            .eq("shop_name", shopName.trim())
+            .limit(1);
+
+        if (locSelectErr) return alert(locSelectErr.message);
+
+        let locationId = existingLocs?.[0]?.id;
+
+        // 2) Create location if it doesn't exist
+        if (!locationId) {
+            const { data: newLoc, error: locInsertErr } = await supabase
+            .from("locations")
+            .insert({ shop_name: shopName.trim() }) // user_id defaults to auth.uid() if you set it
+            .select("id")
+            .single();
+
+            if (locInsertErr) return alert(locInsertErr.message);
+            locationId = newLoc.id;
+        }
+
+        // 3) Insert purchase
+        const { error: purchaseErr } = await supabase.from("purchases").insert({
+            location_id: locationId,
+            drink_name: drinkName.trim(),
+            price: price ? Number(price) : null,
+            rating,
+            notes: notes.trim() || null,
+            // purchased_at: date ? new Date(date).toISOString() : undefined, // keep for later
+        });
+
+        if (purchaseErr) return alert(purchaseErr.message);
+
+        alert("Saved!");
+
+        // reset (optional)
+        setShopName("");
+        setDrinkName("");
+        setPrice("");
+        setDate("");
+        setRating(5);
+        setNotes("");
+        } finally {
+        setSaving(false);
+        }
+    };
 
     return (
         <div>
@@ -43,10 +108,22 @@ const Add = () => {
                             
                             <div className="text-sm grid gap-5 w-full">
                                 <div className="flex flex-col">
+                                    <p className="mb-2">Shop Name</p>
+                                    <Input
+                                        type="text"
+                                        placeholder="Where did you get it?"
+                                        value={shopName}
+                                        onChange={(e) => setShopName(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col">
                                     <p className="mb-2">Location</p>
                                     <Input
                                         type="text"
                                         placeholder="Where did you get it?"
+                                        value={shopName}
+                                        onChange={(e) => setShopName(e.target.value)}
                                     />
                                 </div>
 
@@ -55,6 +132,8 @@ const Add = () => {
                                     <Input
                                         type="text"
                                         placeholder="What did you order?"
+                                        value={drinkName}
+                                        onChange={(e) => setDrinkName(e.target.value)}
                                     />
                                 </div>
 
@@ -66,6 +145,8 @@ const Add = () => {
                                             <Input
                                                 type="text"
                                                 placeholder="0.00"
+                                                value={price}
+                                                onChange={(e) => setPrice(e.target.value)}
                                                 className="pl-7"
                                             />
                                         </div>
@@ -80,6 +161,8 @@ const Add = () => {
                                             <Input
                                                 type="text"
                                                 className="pl-7"
+                                                value={date}
+                                                onChange={(e) => setDate(e.target.value)}
                                             />
                                         </div>
                                     </div>
@@ -88,7 +171,7 @@ const Add = () => {
                                 <div className="flex flex-col">
                                     <p className="mb-2">Rating</p>
                                     <div className="flex grid-cols-5 gap-2">
-                                        <StarRating rating={5} />
+                                        <StarRating rating={rating} onChange={setRating} />
                                     </div>
                                 </div>
                             </div>
@@ -100,13 +183,17 @@ const Add = () => {
                     <p className="geist-500 text-md mb-2">Notes</p>
                     <textarea
                         placeholder="Flavor notes, anything special..."
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
                         className="w-full h-50 p-3 mt-2 outline-1 rounded-lg 
                                     resize-none focus:ring-3 focus:ring-primary text-sm"
                     />
                 </DefaultCard>
 
                 <div className="w-full flex justify-center items-center">
-                    <Button className="ml-auto px-5">Submit</Button>
+                    <Button onClick={handleSubmit} disabled={saving} className="ml-auto px-5">
+                        {saving ? "Saving..." : "Submit"}
+                    </Button>
                 </div>
             </div>
         </div>

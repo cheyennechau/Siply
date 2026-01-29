@@ -1,24 +1,32 @@
 import { Star } from "lucide-react";
+import { useState } from "react";
 
-const StarRating = ({ rating, max = 5 }) => {
-    if (rating == null) return <span className="text-muted-foreground">--</span>
+const StarRating = ({ rating = 0, max = 5, onChange }) => {
+  const [hoverRating, setHoverRating] = useState(null);
 
-    return (
-        <div className="flex gap-1">
-            {Array.from({ length: max }).map((_, i) => {
-                const filled = i < rating;
+  const displayRating = hoverRating ?? rating;
 
-                return (
-                    <Star 
-                        key={i}
-                        strokeWidth={0.5}
-                        className="size-5 text-primary"
-                        fill={filled ? "var(--primary)" : "none"}
-                    />
-                )
-            })}
-        </div>
-    );
+  return (
+    <div className="flex gap-1">
+      {Array.from({ length: max }).map((_, i) => {
+        const starValue = i + 1;
+        const filled = starValue <= displayRating;
+
+        return (
+          <Star
+            key={i}
+            strokeWidth={1}
+            className="size-5 cursor-pointer transition-transform hover:scale-110"
+            color="var(--primary)"
+            fill={filled ? "var(--primary)" : "none"}
+            onMouseEnter={() => setHoverRating(starValue)}
+            onMouseLeave={() => setHoverRating(null)}
+            onClick={() => onChange?.(starValue)}
+          />
+        );
+      })}
+    </div>
+  );
 };
 
 export default StarRating;
