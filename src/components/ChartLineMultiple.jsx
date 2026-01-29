@@ -1,6 +1,5 @@
-import { TrendingUp } from "lucide-react"
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
-
+import { TrendingUp } from "lucide-react";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
@@ -8,39 +7,32 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
+
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
-
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
+} from "@/components/ui/chart";
 
 const chartConfig = {
-  desktop: { label: "Drinks", color: "var(--chart-1)" },
-  mobile: { label: "Rating", color: "var(--chart-2)" },
-}
+  drinks: { label: "Drinks", color: "var(--chart-1)" },
+  avgRating: { label: "Avg Rating", color: "var(--chart-2)" },
+};
 
-export function ChartLineMultiple() {
+const ChartLineMultiple = ({ data }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Line Chart - Multiple</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Drinks & Rating</CardTitle>
+        <CardDescription>Last 6 months</CardDescription>
       </CardHeader>
 
       <CardContent>
         <ChartContainer config={chartConfig} className="h-48 w-full">
-          <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
+          <LineChart data={data} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
+
             <XAxis
               dataKey="month"
               tickLine={false}
@@ -48,16 +40,30 @@ export function ChartLineMultiple() {
               tickMargin={8}
               tickFormatter={(value) => value.slice(0, 3)}
             />
+
+            <YAxis yAxisId="left" tickLine={false} axisLine={false} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              domain={[0, 5]}
+              tickLine={false}
+              axisLine={false}
+            />
+
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+
             <Line
-              dataKey="desktop"
+              yAxisId="left"
+              dataKey="drinks"
               type="monotone"
               stroke="var(--primary)"
               strokeWidth={2}
               dot={false}
             />
+
             <Line
-              dataKey="mobile"
+              yAxisId="right"
+              dataKey="avgRating"
               type="monotone"
               stroke="var(--accent)"
               strokeWidth={2}
@@ -68,17 +74,12 @@ export function ChartLineMultiple() {
       </CardContent>
 
       <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground leading-none">
-              Showing total visitors for the last 6 months
-            </div>
-          </div>
+        <div className="text-sm text-muted-foreground">
+          Drinks per month + average rating per month.
         </div>
       </CardFooter>
     </Card>
-  )
-}
+  );
+};
+
+export default ChartLineMultiple;
