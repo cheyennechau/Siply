@@ -84,25 +84,36 @@ const Overview = () => {
     }, [user]);
 
     useEffect(() => {
-        const fetchHistory = async () => {
-            const { data } = await supabase
-                .from("purchases")
-                .select(`
-                    id,
-                    purchased_at,
-                    drink_name,
-                    price,
-                    rating,
-                    locations (
-                        shop_name
-                    )
-                `);
+        if (!user) return;
 
-                setRows(data ?? []);
+        const fetchHistory = async () => {
+            const { data, error } = await supabase
+            .from("purchases")
+            .select(`
+                id,
+                purchased_at,
+                drink_name,
+                price,
+                rating,
+                locations (
+                shop_name
+                )
+            `)
+            .eq("user_id", user.id)
+            .order("purchased_at", { ascending: false }) // newest first
+            .limit(5); // only 5 rows
+
+            if (error) {
+            console.error("history error:", error.message);
+            setRows([]);
+            return;
+            }
+
+            setRows(data ?? []);
         };
 
         fetchHistory();
-    }, []);
+    }, [user]);
 
     // useEffect(() => {
     //     const fetchTotalSpent = async () => {
