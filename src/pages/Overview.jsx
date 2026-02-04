@@ -7,10 +7,11 @@ import { supabase } from "@/lib/supabaseClient";
 import PageHeader from "@/components/PageHeader";
 import StatCard from "@/components/StatCard";
 import CalendarDropdown from "@/components/CalendarDropdown";
-import { ChartLineMultiple } from "@/components/ChartLineMultiple";
+import ChartLineMultiple from "@/components/ChartLineMultiple";
 import { Button } from "@/components/ui/button";
 import { RadialChart } from "@/components/RadialChart";
 import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 
 const Overview = () => {
     const [rows, setRows] = useState([]);
@@ -193,7 +194,13 @@ const Overview = () => {
                 >
                     <div className="flex justify-between">
                         <p className="geist-500 text-md mb-3">Recent History</p>
-                        <Button>View All</Button>
+                        <Link to="/history">
+                            <Button
+                                className="bg-white text-muted-foreground hover:bg-muted-foreground/20"
+                            >
+                                View All
+                            </Button>
+                        </Link>
                     </div>
                     {rows.map((row) => (
                         <OverviewHistoryCard key={row.id} row={row} className="text-sm geist-400" />

@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 const Add = () => {
     const [shopName, setShopName] = useState("");
+    const [address, setAddress] = useState("");
     const [drinkName, setDrinkName] = useState("");
     const [price, setPrice] = useState("");
     const [date, setDate] = useState(""); // keep as text for now (MVP)
@@ -39,7 +40,7 @@ const Add = () => {
         if (!locationId) {
             const { data: newLoc, error: locInsertErr } = await supabase
             .from("locations")
-            .insert({ shop_name: shopName.trim() }) // user_id defaults to auth.uid() if you set it
+            .insert({ address_name: address.trim() }) // user_id defaults to auth.uid() if you set it
             .select("id")
             .single();
 
@@ -88,8 +89,8 @@ const Add = () => {
                     <DefaultCard>
                         <p className="geist-500 text-md mb-3">Photos</p>
                         <label className="flex h-32 w-full border-2 border-dashed border-primary cursor-pointer mt-2 hover:bg-primary/30 transition-all 
-                                            duration-300 ease-in-out justify-center items-center rounded-lg bg-primary/10 text-sm">
-                            <div className="flex flex-col justify-center items-center">
+                                            duration-300 ease-in-out justify-center items-center rounded-lg text-sm bg-accent-light text-accent-foreground/60">
+                            <div className="flex flex-col justify-center items-center ">
                                 <Upload />
                                 <span>Upload photos here</span>
                             </div>
@@ -123,7 +124,7 @@ const Add = () => {
                                         type="text"
                                         placeholder="Where did you get it?"
                                         value={shopName}
-                                        onChange={(e) => setShopName(e.target.value)}
+                                        onChange={(e) => setAddress(e.target.value)}
                                     />
                                 </div>
 
@@ -171,7 +172,7 @@ const Add = () => {
                                 <div className="flex flex-col">
                                     <p className="mb-2">Rating</p>
                                     <div className="flex grid-cols-5 gap-2">
-                                        <StarRating rating={rating} onChange={setRating} />
+                                        <StarRating rating={rating} onChange={setRating} readOnly={false} />
                                     </div>
                                 </div>
                             </div>
@@ -186,7 +187,8 @@ const Add = () => {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         className="w-full h-50 p-3 mt-2 outline-1 rounded-lg 
-                                    resize-none focus:ring-3 focus:ring-primary text-sm"
+                                    resize-none focus:ring-2 focus:ring-primary text-sm
+                                    bg-accent-light text-accent-foreground placeholder:text-accent-foreground/60"
                     />
                 </DefaultCard>
 

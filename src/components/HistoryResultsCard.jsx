@@ -20,7 +20,7 @@ const HistoryResultsCard = ({ row, className }) => {
       </div>
 
       <div>
-        <StarRating rating={row.rating} />
+        <StarRating rating={row.rating} readOnly />
       </div>
     </div>
   );
