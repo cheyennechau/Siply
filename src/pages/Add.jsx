@@ -13,10 +13,12 @@ const Add = () => {
     const [address, setAddress] = useState("");
     const [drinkName, setDrinkName] = useState("");
     const [price, setPrice] = useState("");
-    const [date, setDate] = useState(""); // keep as text for now (MVP)
+    const [date, setDate] = useState(""); 
     const [rating, setRating] = useState(0);
     const [notes, setNotes] = useState("");
     const [saving, setSaving] = useState(false);
+
+    const normalizedPrice = price.trim() === "" ? null : Number.parseFloat(price).toFixed(2);
 
     const handleSubmit = async () => {
         try {
@@ -49,17 +51,17 @@ const Add = () => {
         const { error: purchaseErr } = await supabase.from("purchases").insert({
             location_id: locationId,
             drink_name: drinkName.trim(),
-            price: price ? Number(price) : null,
+            price: normalizedPrice ? Number(normalizedPrice) : null,
             rating,
             notes: notes.trim() || null,
-            // purchased_at: date ? new Date(date).toISOString() : undefined,
         });
+
 
         if (purchaseErr) return alert(purchaseErr.message);
 
         alert("Saved!");
 
-        // reset (optional)
+        // reset
         setShopName("");
         setDrinkName("");
         setPrice("");
@@ -144,9 +146,21 @@ const Add = () => {
                                                 type="text"
                                                 placeholder="0.00"
                                                 value={price}
-                                                onChange={(e) => setPrice(e.target.value)}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    // allow digits + dot
+                                                    if (/^\d*\.?\d*$/.test(value)) {
+                                                    setPrice(value);
+                                                    }
+                                                }}
+                                                onBlur={() => {
+                                                    if (price !== "") {
+                                                    setPrice(Number(price).toFixed(2));
+                                                    }
+                                                }}
                                                 className="pl-7"
                                             />
+
                                         </div>
                                     </div>
 
