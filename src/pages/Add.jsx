@@ -28,8 +28,25 @@ const Add = () => {
         try {
             setSaving(true);
 
-            if (!shopName.trim()) return alert("Please enter a shop name.");
-            if (!drinkName.trim()) return alert("Please enter a drink name.");
+            if (!shopName.trim()) {
+                alert("Shop name is required.");
+                return;
+            }
+
+            if (!price || Number.isNaN(Number(price))) {
+                alert("Price is required.");
+                return;
+            }
+
+            if (!date) {
+                alert("Date is required.");
+                return;
+            }
+
+            if (rating <= 0) {
+                alert("Please select a rating.");
+                return;
+            }
 
             const { data: existingLocs, error: locSelectErr } = await supabase
             .from("locations")
@@ -122,6 +139,7 @@ const Add = () => {
                                     <p className="mb-2">Shop Name</p>
                                     <Input
                                         type="text"
+                                        required
                                         placeholder="Where did you get it?"
                                         value={shopName}
                                         onChange={(e) => setShopName(e.target.value)}
@@ -132,6 +150,7 @@ const Add = () => {
                                     <p className="mb-2">Location</p>
                                     <Input
                                         type="text"
+                                        required
                                         placeholder="Where was the shop?"
                                         value={address}
                                         onChange={(e) => setAddress(e.target.value)}
@@ -142,6 +161,7 @@ const Add = () => {
                                     <p className="mb-2">Drink Name</p>
                                     <Input
                                         type="text"
+                                        required
                                         placeholder="What did you order?"
                                         value={drinkName}
                                         onChange={(e) => setDrinkName(e.target.value)}
@@ -155,6 +175,7 @@ const Add = () => {
                                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-accent-foreground">$</span>
                                             <Input
                                                 type="text"
+                                                required
                                                 placeholder="0.00"
                                                 value={price}
                                                 onChange={(e) => {
@@ -183,6 +204,7 @@ const Add = () => {
                                             </span>
                                             <Input
                                                 type="date"
+                                                required
                                                 className="pl-9 text-sm text-accent-foreground"
                                                 value={date}
                                                 onChange={(e) => setDate(e.target.value)}
