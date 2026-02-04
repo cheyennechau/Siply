@@ -25,7 +25,6 @@ const Add = () => {
         if (!shopName.trim()) return alert("Please enter a location.");
         if (!drinkName.trim()) return alert("Please enter a drink name.");
 
-        // 1) Find existing location for this user (RLS enforces ownership)
         const { data: existingLocs, error: locSelectErr } = await supabase
             .from("locations")
             .select("id")
@@ -36,11 +35,10 @@ const Add = () => {
 
         let locationId = existingLocs?.[0]?.id;
 
-        // 2) Create location if it doesn't exist
         if (!locationId) {
             const { data: newLoc, error: locInsertErr } = await supabase
             .from("locations")
-            .insert({ address_name: address.trim() }) // user_id defaults to auth.uid() if you set it
+            .insert({ address_name: address.trim() })
             .select("id")
             .single();
 
@@ -48,14 +46,13 @@ const Add = () => {
             locationId = newLoc.id;
         }
 
-        // 3) Insert purchase
         const { error: purchaseErr } = await supabase.from("purchases").insert({
             location_id: locationId,
             drink_name: drinkName.trim(),
             price: price ? Number(price) : null,
             rating,
             notes: notes.trim() || null,
-            // purchased_at: date ? new Date(date).toISOString() : undefined, // keep for later
+            // purchased_at: date ? new Date(date).toISOString() : undefined,
         });
 
         if (purchaseErr) return alert(purchaseErr.message);
@@ -122,8 +119,8 @@ const Add = () => {
                                     <p className="mb-2">Location</p>
                                     <Input
                                         type="text"
-                                        placeholder="Where did you get it?"
-                                        value={shopName}
+                                        placeholder="Where was the shop?"
+                                        value={address}
                                         onChange={(e) => setAddress(e.target.value)}
                                     />
                                 </div>
@@ -142,7 +139,7 @@ const Add = () => {
                                     <div className="flex flex-col">
                                         <p className="mb-2">Price</p>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-accent-foreground">$</span>
                                             <Input
                                                 type="text"
                                                 placeholder="0.00"
@@ -156,7 +153,7 @@ const Add = () => {
                                     <div className="flex flex-col">
                                         <p className="mb-2">Date</p>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-accent-foreground">
                                                 <Calendar size={16} />
                                             </span>
                                             <Input
@@ -188,7 +185,8 @@ const Add = () => {
                         onChange={(e) => setNotes(e.target.value)}
                         className="w-full h-50 p-3 mt-2 outline-1 rounded-lg 
                                     resize-none focus:ring-2 focus:ring-primary text-sm
-                                    bg-accent-light text-accent-foreground placeholder:text-accent-foreground/60"
+                                    bg-accent-light text-accent-foreground placeholder:text-accent-foreground/60
+                                    shadow-xs transition-[color,box-shadow]"
                     />
                 </DefaultCard>
 
