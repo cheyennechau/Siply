@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/context/AuthContext";
 
 
 const Add = () => {
+    const { user } = useAuth();
     const [shopName, setShopName] = useState("");
     const [address, setAddress] = useState("");
     const [drinkName, setDrinkName] = useState("");
@@ -18,56 +20,65 @@ const Add = () => {
     const [notes, setNotes] = useState("");
     const [saving, setSaving] = useState(false);
 
-    const normalizedPrice = price.trim() === "" ? null : Number.parseFloat(price).toFixed(2);
-
     const handleSubmit = async () => {
+        const priceNum = Number.parseFloat(price);
+        const normalizedPrice = price.trim() === "" || Number.isNaN(priceNum) ? null : priceNum.toFixed(2);
+        const purchasedAt = date?.trim() ? new Date(`${date}T12:00:00`).toISOString() : undefined;
+
         try {
-        setSaving(true);
+            setSaving(true);
 
-        if (!shopName.trim()) return alert("Please enter a location.");
-        if (!drinkName.trim()) return alert("Please enter a drink name.");
+            if (!shopName.trim()) return alert("Please enter a shop name.");
+            if (!drinkName.trim()) return alert("Please enter a drink name.");
 
-        const { data: existingLocs, error: locSelectErr } = await supabase
+            const { data: existingLocs, error: locSelectErr } = await supabase
             .from("locations")
             .select("id")
             .eq("shop_name", shopName.trim())
+            .eq("user_id", user.id)
             .limit(1);
 
-        if (locSelectErr) return alert(locSelectErr.message);
+            if (locSelectErr) return alert(locSelectErr.message);
 
-        let locationId = existingLocs?.[0]?.id;
+            let locationId = existingLocs?.[0]?.id;
 
-        if (!locationId) {
-            const { data: newLoc, error: locInsertErr } = await supabase
-            .from("locations")
-            .insert({ address: address.trim() })
-            .select("id")
-            .single();
+            if (!locationId) {
+                const { data: newLoc, error: locInsertErr } = await supabase
+                .from("locations")
+                .insert({ 
+                    user_id: user.id,
+                    shop_name: shopName.trim(),
+                    address: address.trim() || null,
+                })
+                .select("id")
+                .single();
 
-            if (locInsertErr) return alert(locInsertErr.message);
-            locationId = newLoc.id;
-        }
+                if (locInsertErr) return alert(locInsertErr.message);
+                locationId = newLoc.id;
+            }
 
-        const { error: purchaseErr } = await supabase.from("purchases").insert({
-            location_id: locationId,
-            drink_name: drinkName.trim(),
-            price: normalizedPrice ? Number(normalizedPrice) : null,
-            rating,
-            notes: notes.trim() || null,
-        });
+            const { error: purchaseErr } = await supabase.from("purchases").insert({
+                location_id: locationId,
+                drink_name: drinkName.trim(),
+                price: normalizedPrice ? Number(normalizedPrice) : null,
+                rating,
+                notes: notes.trim() || null,
+                purchased_at: purchasedAt,
+            });
 
 
-        if (purchaseErr) return alert(purchaseErr.message);
+            if (purchaseErr) return alert(purchaseErr.message);
 
-        alert("Saved!");
+            alert("Saved!");
 
-        // reset
-        setShopName("");
-        setDrinkName("");
-        setPrice("");
-        setDate("");
-        setRating(5);
-        setNotes("");
+            // reset
+            setShopName("");
+            setAddress("");
+            setDrinkName("");
+            setPrice("");
+            setDate("");
+            setRating(0);
+            setNotes("");
         } finally {
         setSaving(false);
         }
@@ -171,8 +182,8 @@ const Add = () => {
                                                 <Calendar size={16} />
                                             </span>
                                             <Input
-                                                type="text"
-                                                className="pl-7"
+                                                type="date"
+                                                className="pl-9 text-sm text-accent-foreground"
                                                 value={date}
                                                 onChange={(e) => setDate(e.target.value)}
                                             />
