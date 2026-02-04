@@ -38,7 +38,7 @@ const Add = () => {
         if (!locationId) {
             const { data: newLoc, error: locInsertErr } = await supabase
             .from("locations")
-            .insert({ address_name: address.trim() })
+            .insert({ address: address.trim() })
             .select("id")
             .single();
 
