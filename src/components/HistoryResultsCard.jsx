@@ -2,7 +2,7 @@ import StarRating from "./StarRating";
 
 const HistoryResultsCard = ({ row, className }) => {
   return (
-    <div className={`grid grid-cols-5 gap-20 px-5 py-2 items-center hover:bg-muted-foreground/8 transition-all duration-300 ease-in-out border-b ${className}`}>
+    <div className={`grid grid-cols-5 gap-20 px-5 py-2 items-center hover:bg-muted-foreground/8 transition-all duration-300 ease-in-out border-b cursor-pointer ${className}`}>
       <div>
         {new Date(row.purchased_at).toLocaleDateString()}
       </div>

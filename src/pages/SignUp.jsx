@@ -12,9 +12,16 @@ const SignUp = () => {
     const [lastName, setLastName] = useState("")
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("")
+    const [confirmPassword, setConfirmPassword] = useState("")
+    const [errorMsg, setErrorMsg] = useState("")
 
     const handleEmailSignUp = async(e) => {
         e.preventDefault();
+
+        if (password != confirmPassword) {
+            alert("Passwords do not match.");
+            return;
+        }
 
         const { error } = await supabase.auth.signUp({
             email,
@@ -25,12 +32,7 @@ const SignUp = () => {
         });
 
         if (error) {
-            if (
-                error.message.toLowerCase().includes("register")
-            ) {
-                alert("An account with this email already exists.")
-                return;
-            }
+            setErrorMsg(error.message);
         }
 
         alert("Account created!");
@@ -39,7 +41,7 @@ const SignUp = () => {
 
     const signInWithGoogle = async() => {
         const { error } = await supabase.auth.signInWithOAuth({
-            provider: google,
+            provider: "google",
         });
     };
 
@@ -57,25 +59,41 @@ const SignUp = () => {
                     <form onSubmit={handleEmailSignUp} className="px-10 pt-10 grid gap-5 w-full">
                         <Input
                             placeholder="First Name"
+                            required
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
                         />
                         <Input
                             placeholder="Last Name"
+                            required
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
                         />
                         <Input
                             placeholder="Email"
+                            required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
                         <Input
                             type="password"
+                            required
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
+
+                        <Input
+                            type="password"
+                            required
+                            placeholder="Confirm Password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+
+                        {errorMsg && (
+                            <p className="text-sm text-red-500 text-center">{errorMsg}</p>
+                        )}
 
                         <Button type="submit" className="mt-5">Sign Up</Button>
                     </form>

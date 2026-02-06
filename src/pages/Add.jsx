@@ -225,7 +225,7 @@ const Add = () => {
                 </div>
 
                 <DefaultCard>
-                    <p className="geist-500 text-md mb-2">Notes</p>
+                    <p className="geist-500 text-md mb-2">Notes (optional)</p>
                     <textarea
                         placeholder="Flavor notes, anything special..."
                         value={notes}
